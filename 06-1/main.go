@@ -30,7 +30,10 @@ func main() {
 	//closest := 0
 	for s.Scan() {
 		var x, y int
-		fmt.Sscanf(s.Text(), "%d, %d", &x, &y)
+		_, e := fmt.Sscanf(s.Text(), "%d, %d", &x, &y)
+		if e != nil {
+			log.Fatal(e)
+		}
 		coords = append(coords, point{0, x, y, false})
 		if x > maxx {
 			maxx = x
@@ -44,30 +47,39 @@ func main() {
 	for i := 0; i < maxx; i++ {
 		grid[i] = make([]int, maxy)
 	}
-
-	for x := 0; x < len(grid); x++ {
-		for y := 0; y < len(grid[x]); y++ {
+	for y := 0; y < maxy; y++ {
+		for x := 0; x < maxx; x++ {
 			min := math.MaxInt32
-			minn := 0
+			minn := -1
+			nocount := false
 			for i, c := range coords {
-				dist := getdist(c, point{0, x, y, false})
+				dist := getdist(point{0, x, y, false}, c)
 				if dist < min {
 					min = dist
 					minn = i
-
+					nocount = false
+				} else if dist == min {
+					nocount = true
 				}
 			}
-			if x == 0 || y == 0 || x == len(grid) || y == len(grid[x]) {
+
+			if x == 0 || y == 0 || x == maxx || y == maxy {
 				coords[minn].inf = true
+
 			}
-			coords[minn].n++
+
+			if !nocount {
+				coords[minn].n++
+			}
 		}
 	}
 	var max int
 	for _, c := range coords {
+
 		if c.inf == true {
 			continue
 		}
+		fmt.Println(c)
 		if c.n > max {
 			max = c.n
 		}
@@ -81,7 +93,7 @@ func getdist(a, b point) int {
 
 func abs(x int) int {
 	if x < 0 {
-		return x * -1
+		return -x
 	}
 	return x
 }
