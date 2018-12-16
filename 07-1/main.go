@@ -7,155 +7,87 @@ import (
 	"os"
 )
 
-type step struct {
-	name string
-	next *step
+type node struct {
+	stepname string
 }
 
-func (s *step) String() string {
-	if s.next == nil {
-		return fmt.Sprintf("Step %s, kommr keiner mehr", s.name)
+func (n *node) String() string {
+	return fmt.Sprintf("%s", n.stepname)
+}
+
+type graph struct {
+	nodes []*node
+	edges map[node][]*node
+}
+
+func (g *graph) toposort() {
+	visited := make(map[node]bool)
+	for _, n := range g.nodes {
+		visited[*n] = false
 	}
-	return fmt.Sprintf("Step %s, hat als nächstes %s", s.name, s.next.name)
-}
-func (s *step) Next() *step {
-	if s == nil {
-		return nil
-	}
-	return s.next
-}
-
-type steps struct {
-	start *step
-}
-
-func (s *steps) Insert(newstep *step) {
-
-	//fmt.Println(newstep)
-	if s.start == nil {
-		fmt.Println("START")
-		s.start = newstep
-		return
-	}
-
-	if s.start.name == newstep.name {
-		fmt.Println("Muss START ersetzen")
-		if s.start.next == nil {
-			s.start.next = newstep.next
-			return
+	fmt.Println(visited)
+	stack := make([]node, 0)
+	for _, n := range g.nodes {
+		if visited[*n] == false {
+			g.toprec(n, visited, stack)
 		}
-		if s.start.next.name < newstep.next.name {
-			fmt.Println(s.start.next.name, "<", newstep.next.name)
-			if s.start.next.next == nil {
-				fmt.Printf("%s hat keinen nächsten\n", s.start.next.name)
-				s.start.next.next = newstep.next
-				return
-			}
-			newstep.next.next = s.start.next.next
-			s.start.next.next = newstep.next
+	}
+	fmt.Println(visited)
 
-		} else {
-			newstep.next.next = s.start.next
-			s.start.next = newstep.next
-
-		}
-		return
-	}
-	if newstep.next.name == s.start.name {
-		fmt.Printf("START GLEICH NEW\n")
-		return
-	}
-
-	foundstep := s.Step(newstep.name)
-	if foundstep == nil {
-		fmt.Println("Not yte implemented")
-		return
-	}
-	if foundstep.next == nil {
-		fmt.Println("Gefundener Step hat keinen Nächsten")
-		fmt.Println("Neu: ", newstep)
-		fmt.Println("Gefunden: ", foundstep)
-		gibtesdennächsten := s.Step(newstep.next.name)
-		fmt.Println("Nächster: ", gibtesdennächsten)
-		vorgaenger := s.VorStep(gibtesdennächsten.name)
-		fmt.Println("VORGAENGER", vorgaenger)
-		return
-	}
-
-	if foundstep.next.name == newstep.next.name {
-		return
-	}
-
-	if foundstep.next.name < newstep.next.name {
-		fmt.Println(foundstep.next.name, "<", newstep.next.name)
-		if foundstep.next.next == nil {
-			fmt.Printf("%s hat keinen nächsten\n", foundstep.next.name)
-			foundstep.next.next = newstep.next
-			return
-		}
-		newstep.next.next = foundstep.next.next
-		foundstep.next.next = newstep.next
-		return
-	}
-
-	if foundstep.next.name > newstep.next.name {
-		fmt.Println(foundstep.next.name, ">", newstep.next.name)
-		newstep.next.next = foundstep.next
-		foundstep.next = newstep.next
-		return
-
-	}
-
-	fmt.Println("der keine ahnung was fall")
-	fmt.Println("Neustep: ", newstep)
-	fmt.Println("found: ", foundstep)
-	return
-
-}
-func (ss *steps) VorStep(name string) *step {
-	if ss == nil {
-		return nil
-	}
-	if ss.start.name == name {
-		fmt.Println("START HAT KEINE VORGÄNGER")
-		return nil
-	}
-	cst := ss.start.Next()
-	var vorg *step
-	for cst != nil {
-		if cst.name == name {
-			return vorg
-		}
-		vorg = cst
-		cst = cst.next
-	}
-	return nil
-}
-func (ss *steps) Step(name string) *step {
-	if ss == nil {
-		return nil
-	}
-	if ss.start.name == name {
-		return ss.start
-	}
-	cst := ss.start.Next()
-	for cst != nil {
-		//fmt.Println("Found next", cst)
-		if cst.name == name {
-			return cst
-		}
-		cst = cst.next
-	}
-	return nil
+	fmt.Println("--", stack)
 }
 
-func (ss *steps) PrintAll() {
-	cst := ss.start
-	for cst != nil {
-		fmt.Printf("%s ", cst.name)
-		//fmt.Printf("%v", cst)
-		cst = cst.Next()
+func (g *graph) toprec(n *node, visited map[node]bool, stack []node) {
+	visited[*n] = true
+	for _, no := range g.nodes {
+		if visited[*no] == false {
+			g.toprec(no, visited, stack)
+		}
 	}
+	fmt.Println("append")
+	fmt.Println(n)
+	fmt.Println("++*", stack)
+	stack = append(stack, *n)
+}
+
+func (g *graph) getNachfolger(n *node) int {
+	return len(g.edges[*n])
+}
+func (g *graph) hasNode(n *node) bool {
+	for _, no := range g.nodes {
+		if no.stepname == n.stepname {
+			return true
+		}
+	}
+	return false
+}
+func (g *graph) AddNode(n *node) {
+	if !g.hasNode(n) {
+		g.nodes = append(g.nodes, n)
+	}
+}
+
+func (g *graph) AddEdge(n1, n2 *node) {
+	if g.edges == nil {
+		g.edges = make(map[node][]*node)
+	}
+	g.edges[*n1] = append(g.edges[*n1], n2)
+	// g.edges[*n2] = append(g.edges[*n2], n1)
+
+}
+
+func (g *graph) Print() {
+	s := ""
+	for i := 0; i < len(g.nodes); i++ {
+		s += g.nodes[i].String() + " -> "
+		near := g.edges[*g.nodes[i]]
+		for j := 0; j < len(near); j++ {
+			s += near[j].String() + " "
+		}
+		//fmt.Printf("%d", g.getNachfolger(g.nodes[i]))
+		s += "\n"
+	}
+	fmt.Println(s)
 }
 
 func main() {
@@ -165,20 +97,15 @@ func main() {
 	}
 	defer f.Close()
 	s := bufio.NewScanner(f)
-	var ss steps
+	var gr graph
 	for s.Scan() {
-		var mustfin, canbegin string
-		fmt.Sscanf(s.Text(), "Step %s must be finished before step %s can begin.", &mustfin, &canbegin)
-		ss.Insert(&step{
-			name: mustfin,
-			next: &step{
-				name: canbegin,
-			},
-		})
-		fmt.Println("==========================================")
-		ss.PrintAll()
-		fmt.Println()
-		fmt.Println("==========================================")
+		n1 := &node{}
+		n2 := &node{}
+		fmt.Sscanf(s.Text(), "Step %s must be finished before step %s can begin.", &n1.stepname, &n2.stepname)
+		gr.AddNode(n1)
+		gr.AddNode(n2)
+		gr.AddEdge(n1, n2)
 	}
-	ss.PrintAll()
+	gr.Print()
+	gr.toposort()
 }
