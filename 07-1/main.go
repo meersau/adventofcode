@@ -29,17 +29,17 @@ type graph struct {
 
 func (g *graph) getNach(k string) []node {
 	nachfolgers := nodes{}
-	fmt.Println("Edges:", g.edges)
+	//fmt.Println("Edges:", g.edges)
 	for re, ed := range g.edges {
 		for _, n := range ed {
 			if n.stepname == k {
-				fmt.Println("HABE NACHFOLGER", n)
+				//fmt.Println("HABE NACHFOLGER", n)
 				nachfolgers = append(nachfolgers, re)
 			}
 		}
 	}
 
-	sort.Sort(nachfolgers)
+	//sort.Sort(nachfolgers)
 
 	return nachfolgers
 }
@@ -74,22 +74,22 @@ func (g *graph) toposort() {
 	}
 
 	// To store the keys in slice in sorted order
-	var keys []string
-	for k := range nachfolgercount {
-		fmt.Println("Key for", k)
-		keys = append(keys, k.stepname)
-	}
-	sort.Strings(keys)
+	//var keys []string
+	//for k := range nachfolgercount {
+	//	fmt.Println("Key for", k)
+	//	keys = append(keys, k.stepname)
+	//}
+	//sort.Strings(keys)
 	/* for i := len(keys)/2 - 1; i >= 0; i-- {
 		opp := len(keys) - 1 - i
 		keys[i], keys[opp] = keys[opp], keys[i]
 	} */
-	fmt.Println("keys:", keys)
+	//fmt.Println("keys:", keys)
 
-	fmt.Println(nachfolgercount)
+	//fmt.Println(nachfolgercount)
 	fmt.Println(queue)
 	fmt.Println("##")
-
+	sort.Sort(queue)
 	for len(queue) > 0 {
 		fmt.Println("**************")
 		var u node
@@ -102,7 +102,7 @@ func (g *graph) toposort() {
 		//for _, n := range g.nodes {
 
 		for _, en := range g.getNach(u.stepname) {
-			fmt.Println("Count nachfolgers", len(g.getNach(u.stepname)))
+			//fmt.Println("Count nachfolgers", len(g.getNach(u.stepname)))
 			//fmt.Printf("Node im innerloop %v", no)
 			nachfolgercount[en]--
 			if nachfolgercount[en] == 0 {
