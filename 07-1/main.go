@@ -5,11 +5,18 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 )
 
 type node struct {
 	stepname string
 }
+
+type nodes []node
+
+func (n nodes) Len() int           { return len(n) }
+func (n nodes) Swap(i, j int)      { n[i], n[j] = n[j], n[i] }
+func (n nodes) Less(i, j int) bool { return n[i].stepname < n[j].stepname }
 
 func (n *node) String() string {
 	return fmt.Sprintf("%s", n.stepname)
@@ -20,34 +27,96 @@ type graph struct {
 	edges map[node][]*node
 }
 
-func (g *graph) toposort() {
-	visited := make(map[node]bool)
-	for _, n := range g.nodes {
-		visited[*n] = false
-	}
-	fmt.Println(visited)
-	stack := make([]node, 0)
-	for _, n := range g.nodes {
-		if visited[*n] == false {
-			g.toprec(n, visited, stack)
+func (g *graph) getNach(k string) []node {
+	nachfolgers := nodes{}
+	fmt.Println("Edges:", g.edges)
+	for re, ed := range g.edges {
+		for _, n := range ed {
+			if n.stepname == k {
+				fmt.Println("HABE NACHFOLGER", n)
+				nachfolgers = append(nachfolgers, re)
+			}
 		}
 	}
-	fmt.Println(visited)
 
-	fmt.Println("--", stack)
+	sort.Sort(nachfolgers)
+
+	return nachfolgers
+}
+func (g *graph) getNode(k string) *node {
+	for _, n := range g.nodes {
+		if n.stepname == k {
+			return n
+		}
+	}
+	return nil
 }
 
-func (g *graph) toprec(n *node, visited map[node]bool, stack []node) {
-	visited[*n] = true
-	for _, no := range g.nodes {
-		if visited[*no] == false {
-			g.toprec(no, visited, stack)
+func (g *graph) getEdes(k string) []*node {
+	for _, n := range g.nodes {
+		if n.stepname == k {
+			return g.edges[*n]
 		}
 	}
-	fmt.Println("append")
-	fmt.Println(n)
-	fmt.Println("++*", stack)
-	stack = append(stack, *n)
+	return nil
+}
+
+func (g *graph) toposort() {
+	nachfolgercount := make(map[node]int)
+
+	queue := nodes{}
+	toporder := []node{}
+	for _, node := range g.nodes {
+		nachfolgercount[*node] = g.getNachfolger(node)
+		if nachfolgercount[*node] == 0 {
+			queue = append(queue, *node)
+		}
+	}
+
+	// To store the keys in slice in sorted order
+	var keys []string
+	for k := range nachfolgercount {
+		fmt.Println("Key for", k)
+		keys = append(keys, k.stepname)
+	}
+	sort.Strings(keys)
+	/* for i := len(keys)/2 - 1; i >= 0; i-- {
+		opp := len(keys) - 1 - i
+		keys[i], keys[opp] = keys[opp], keys[i]
+	} */
+	fmt.Println("keys:", keys)
+
+	fmt.Println(nachfolgercount)
+	fmt.Println(queue)
+	fmt.Println("##")
+
+	for len(queue) > 0 {
+		fmt.Println("**************")
+		var u node
+		u, queue = queue[0], queue[1:]
+		fmt.Println("Node for toporder", u)
+
+		toporder = append(toporder, u)
+		fmt.Println("-----------------------")
+		//---> edges nicht nodes
+		//for _, n := range g.nodes {
+
+		for _, en := range g.getNach(u.stepname) {
+			fmt.Println("Count nachfolgers", len(g.getNach(u.stepname)))
+			//fmt.Printf("Node im innerloop %v", no)
+			nachfolgercount[en]--
+			if nachfolgercount[en] == 0 {
+				queue = append(queue, en)
+			}
+		}
+		//}
+		sort.Sort(queue)
+		fmt.Println("NewQu", queue)
+
+	}
+
+	fmt.Println("TOPORDER: ", toporder)
+
 }
 
 func (g *graph) getNachfolger(n *node) int {
@@ -71,8 +140,8 @@ func (g *graph) AddEdge(n1, n2 *node) {
 	if g.edges == nil {
 		g.edges = make(map[node][]*node)
 	}
-	g.edges[*n1] = append(g.edges[*n1], n2)
-	// g.edges[*n2] = append(g.edges[*n2], n1)
+	//g.edges[*n1] = append(g.edges[*n1], n2)
+	g.edges[*n2] = append(g.edges[*n2], n1)
 
 }
 
