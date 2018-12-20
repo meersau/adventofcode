@@ -19,7 +19,7 @@ func (n nodes) Swap(i, j int)      { n[i], n[j] = n[j], n[i] }
 func (n nodes) Less(i, j int) bool { return n[i].stepname < n[j].stepname }
 
 func (n *node) String() string {
-	return fmt.Sprintf("%s", n.stepname)
+	return n.stepname
 }
 
 type graph struct {
@@ -111,11 +111,14 @@ func (g *graph) toposort() {
 		}
 		//}
 		sort.Sort(queue)
-		fmt.Println("NewQu", queue)
+		//fmt.Println("NewQu", queue)
 
 	}
 
-	fmt.Println("TOPORDER: ", toporder)
+	for _, p := range toporder {
+		fmt.Printf("%s", p.stepname)
+	}
+	fmt.Print("\n")
 
 }
 
@@ -175,6 +178,6 @@ func main() {
 		gr.AddNode(n2)
 		gr.AddEdge(n1, n2)
 	}
-	gr.Print()
+	//gr.Print()
 	gr.toposort()
 }
