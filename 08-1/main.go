@@ -26,14 +26,22 @@ type tree struct {
 }
 
 func (t *tree) pr() {
+	var sum int
 	fmt.Println("C: ", t.c)
 	cur := t.root
 
 	for cur.next != nil {
 		fmt.Printf("%v\n", cur)
+		for _, v := range cur.meta {
+			sum = sum + v
+		}
 		cur = cur.next
 	}
 	fmt.Printf("%v\n", cur)
+	for _, v := range cur.meta {
+		sum = sum + v
+	}
+	fmt.Println("Sum: ", sum)
 
 }
 
@@ -91,11 +99,10 @@ func parsenodes(t *tree, b []int, pos int) int {
 	}
 
 	n.meta = make([]int, 0)
-	if n.mp > 0 {
-		for i := 0; i < n.mp; i++ {
-			n.meta = append(n.meta, b[pos+i])
-		}
+	for i := 0; i < n.mp; i++ {
+		n.meta = append(n.meta, b[pos+i])
 	}
+
 	t.insertNode(n)
 	fmt.Printf("Insert Node pos: %d: %+v\n", pos, n)
 	return pos + len(n.meta)
