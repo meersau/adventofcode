@@ -7,7 +7,10 @@ const inputdata = "356261-846303"
 func main() {
 	var count int
 	for i := 356261; i <= 846303; i++ {
-		if neverdec(i) && same(i) {
+		if !same(i) {
+			continue
+		}
+		if neverdec(i) {
 			count++
 		}
 	}
@@ -41,7 +44,7 @@ func neverdec(i int) bool {
 	if z < h {
 		return false
 	}
-	if e < h {
+	if e < z {
 		return false
 	}
 	return true
