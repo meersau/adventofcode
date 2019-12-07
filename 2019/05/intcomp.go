@@ -32,45 +32,6 @@ func intcomp(memory []int, inputs []int) {
 			fmt.Println("HALT")
 			break
 		}
-		// add
-		if opcode == 1 {
-			var para1, para2 int
-			if modp1 == 1 {
-				//fmt.Println("Mod1:", modp1)
-				para1 = memory[instpointer+1]
-			} else {
-				para1 = memory[memory[instpointer+1]]
-			}
-			if modp2 == 1 {
-				//fmt.Println("Mod2:", modp2)
-				para2 = memory[instpointer+2]
-			} else {
-				para2 = memory[memory[instpointer+2]]
-			}
-			//fmt.Println("Para1:", para1, "Para2:", para2)
-			//fmt.Println("Vor:", memory[memory[instpointer+3]])
-			memory[memory[instpointer+3]] = para1 + para2
-			//fmt.Println("Danach", memory[memory[instpointer+3]])
-			instpointer = instpointer + 4
-			continue
-		}
-		// multi
-		if opcode == 2 {
-			var para1, para2 int
-			if modp1 == 1 {
-				para1 = memory[instpointer+1]
-			} else {
-				para1 = memory[memory[instpointer+1]]
-			}
-			if modp2 == 1 {
-				para2 = memory[instpointer+2]
-			} else {
-				para2 = memory[memory[instpointer+2]]
-			}
-			memory[memory[instpointer+3]] = para1 * para2
-			instpointer = instpointer + 4
-			continue
-		}
 
 		// input
 		if opcode == 3 {
@@ -80,7 +41,6 @@ func intcomp(memory []int, inputs []int) {
 			instpointer = instpointer + 2
 			continue
 		}
-
 		// output
 		if opcode == 4 {
 			var tooutput int
@@ -89,7 +49,6 @@ func intcomp(memory []int, inputs []int) {
 			} else {
 				tooutput = memory[memory[instpointer+1]]
 			}
-
 			fmt.Println("OUT: ", tooutput)
 			//if tooutput != 0 {
 			//fmt.Println("Fehler")
@@ -98,5 +57,73 @@ func intcomp(memory []int, inputs []int) {
 			instpointer = instpointer + 2
 			continue
 		}
+		var para1, para2 int
+		if modp1 == 1 {
+			//fmt.Println("Mod1:", modp1)
+			para1 = memory[instpointer+1]
+		} else {
+			para1 = memory[memory[instpointer+1]]
+		}
+		if modp2 == 1 {
+			//fmt.Println("Mod2:", modp2)
+			para2 = memory[instpointer+2]
+		} else {
+			para2 = memory[memory[instpointer+2]]
+		}
+		// add
+		if opcode == 1 {
+			memory[memory[instpointer+3]] = para1 + para2
+			instpointer = instpointer + 4
+			continue
+		}
+		// multi
+		if opcode == 2 {
+			memory[memory[instpointer+3]] = para1 * para2
+			instpointer = instpointer + 4
+			continue
+		}
+
+		// jump-if-true || jump-if-false
+		if opcode == 5 {
+			if para1 != 0 {
+				instpointer = para2
+				continue
+			}
+			instpointer = instpointer + 3
+			continue
+
+		}
+		if opcode == 6 {
+			if para1 == 0 {
+				instpointer = para2
+				continue
+			}
+			instpointer = instpointer + 3
+			continue
+
+		}
+
+		// less-than || equals
+		if opcode == 7 {
+			if para1 < para2 {
+				memory[memory[instpointer+3]] = 1
+			} else {
+				memory[memory[instpointer+3]] = 0
+			}
+			instpointer = instpointer + 4
+			continue
+		}
+
+		if opcode == 8 {
+			if para1 == para2 {
+				memory[memory[instpointer+3]] = 1
+			} else {
+				memory[memory[instpointer+3]] = 0
+			}
+
+			instpointer = instpointer + 4
+			continue
+		}
+
 	}
 }
