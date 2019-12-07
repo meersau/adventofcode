@@ -27,16 +27,16 @@ func intcomp(memory []int, inputs []int, outputs []int) []int {
 				fmt.Sscanf(instopstr, "%2d", &opcode)
 			}
 		}
-		fmt.Println("Instruction:", instopstr, "Pointer:", instpointer, "Mod3:", modp3, "Mod2:", modp2, "Mod1:", modp1, "Opcode:", opcode)
+		//fmt.Println("Instruction:", instopstr, "Pointer:", instpointer, "Mod3:", modp3, "Mod2:", modp2, "Mod1:", modp1, "Opcode:", opcode)
 		if opcode == 99 {
-			fmt.Println("HALT")
+			//fmt.Println("HALT")
 			return outputs
 			break
 		}
 
 		// input
 		if opcode == 3 {
-			fmt.Println("Input", inputs[inputcount])
+			//fmt.Println("Input", inputs[inputcount])
 			memory[memory[instpointer+1]] = inputs[inputcount]
 			inputcount++
 			instpointer = instpointer + 2
@@ -52,7 +52,7 @@ func intcomp(memory []int, inputs []int, outputs []int) []int {
 			}
 			fmt.Println("OUT: ", tooutput)
 			outputs = append(outputs, tooutput)
-			fmt.Println("outputs innen:", outputs)
+			//fmt.Println("outputs innen:", outputs)
 			//if tooutput != 0 {
 			//fmt.Println("Fehler")
 			//break

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"strconv"
 )
 
@@ -24,15 +25,44 @@ func (a amp) RunAmp(input int, prog []int) []int {
 	ownmem := make([]int, len(prog))
 	outputs := make([]int, 0)
 	copy(ownmem, prog)
-	fmt.Println(prog)
-	fmt.Println(ownmem)
+	//fmt.Println(prog)
+	//fmt.Println(ownmem)
 	out := intcomp(ownmem, []int{a.phase, input}, outputs)
-	fmt.Println("Outputs:", outputs)
+	//fmt.Println("Outputs:", outputs)
 	return out
 }
 
-func getprog(file string) []int {
-	b, err := ioutil.ReadFile(file)
+func permutations(arr []int) [][]int {
+	var helper func([]int, int)
+	res := [][]int{}
+
+	helper = func(arr []int, n int) {
+		if n == 1 {
+			tmp := make([]int, len(arr))
+			copy(tmp, arr)
+			res = append(res, tmp)
+		} else {
+			for i := 0; i < n; i++ {
+				helper(arr, n-1)
+				if n%2 == 1 {
+					tmp := arr[i]
+					arr[i] = arr[n-1]
+					arr[n-1] = tmp
+				} else {
+					tmp := arr[0]
+					arr[0] = arr[n-1]
+					arr[n-1] = tmp
+				}
+			}
+		}
+	}
+	helper(arr, len(arr))
+	return res
+}
+
+func main() {
+
+	b, err := ioutil.ReadFile(os.Args[1])
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -43,32 +73,43 @@ func getprog(file string) []int {
 		i, _ := strconv.Atoi(string(z))
 		inst = append(inst, i)
 	}
-	return inst
+	var max int
+	totest := permutations([]int{0, 1, 2, 3, 4})
+	for _, p := range totest {
+		fmt.Println(p)
+		t := thrust(p[0], p[1], p[2], p[3], p[4], inst)
+		if t > max {
+			max = t
+		}
+	}
+
+	fmt.Println(max)
+	// 4968420 <- ist falsch */
 
 }
 
-func main() {
+func thrust(p1, p2, p3, p4, p5 int, prog []int) int {
+	a1 := NewAmp(p1)
+	a2 := NewAmp(p2)
+	a3 := NewAmp(p3)
+	a4 := NewAmp(p4)
+	a5 := NewAmp(p5)
+	pro1 := make([]int, len(prog))
+	copy(pro1, prog)
+	pro2 := make([]int, len(prog))
+	copy(pro2, prog)
+	pro3 := make([]int, len(prog))
+	copy(pro3, prog)
+	pro4 := make([]int, len(prog))
+	copy(pro4, prog)
+	pro5 := make([]int, len(prog))
+	copy(pro5, prog)
 
-	// prog := getprog(os.Args[0])
-	// b := []byte("3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0")
-	b := []byte("3,23,3,24,1002,24,10,24,1002,23,-1,23,101,5,23,23,1,24,23,23,4,23,99,0,0")
-	i := bytes.Split(b, []byte{','})
-	prog := make([]int, 0)
-	for _, z := range i {
-		i, _ := strconv.Atoi(string(z))
-		prog = append(prog, i)
-	}
-	a1 := NewAmp(0)
-	a2 := NewAmp(1)
-	a3 := NewAmp(2)
-	a4 := NewAmp(3)
-	a5 := NewAmp(4)
+	o1 := a1.RunAmp(0, pro1)
+	o2 := a2.RunAmp(o1[0], pro2)
+	o3 := a3.RunAmp(o2[0], pro3)
+	o4 := a4.RunAmp(o3[0], pro4)
+	o5 := a5.RunAmp(o4[0], pro5)
 
-	o1 := a1.RunAmp(0, prog)
-	o2 := a2.RunAmp(o1[0], prog)
-	o3 := a3.RunAmp(o2[0], prog)
-	o4 := a4.RunAmp(o3[0], prog)
-	o5 := a5.RunAmp(o4[0], prog)
-
-	fmt.Println(o5[0])
+	return o5[0]
 }
