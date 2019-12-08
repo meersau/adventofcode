@@ -1,11 +1,8 @@
-package main23
+package main
 
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"os"
 	"strconv"
 )
 
@@ -13,23 +10,34 @@ type amp struct {
 	inputsignal  int
 	outputsignal int
 	phase        int
+	inchan       chan int
+	outchan      chan int
+	memory       []int
 }
 
-func NewAmp(phase int) amp {
+func NewAmp(phase int, mem []int) amp {
+	in := make(chan int)
+	out := make(chan int)
+	mymem := make([]int, len(mem))
+	copy(mymem, mem)
 	return amp{
-		phase: phase,
+		phase:   phase,
+		inchan:  in,
+		outchan: out,
+		memory:  mymem,
 	}
 }
 
-func (a amp) RunAmp(input int, prog []int) []int {
-	ownmem := make([]int, len(prog))
-	outputs := make([]int, 0)
-	copy(ownmem, prog)
-	//fmt.Println(prog)
-	//fmt.Println(ownmem)
-	out := intcomp(ownmem, []int{a.phase, input}, outputs)
-	//fmt.Println("Outputs:", outputs)
-	return out
+func (a amp) RunAmp() {
+	intcomp(a.memory, a.inchan, a.outchan)
+}
+
+func (a amp) SendInput(in int) {
+	a.inchan <- in
+}
+
+func (a amp) GetOut() int {
+	return <-a.outchan
 }
 
 func permutations(arr []int) [][]int {
@@ -62,18 +70,27 @@ func permutations(arr []int) [][]int {
 
 func main() {
 
-	b, err := ioutil.ReadFile(os.Args[1])
+	/* b, err := ioutil.ReadFile(os.Args[1])
 	if err != nil {
 		log.Fatal(err)
-	}
-
+	} */
+	b := []byte("3,9,8,9,10,9,4,9,99,-1,8")
 	i := bytes.Split(b, []byte{','})
 	inst := make([]int, 0)
 	for _, z := range i {
 		i, _ := strconv.Atoi(string(z))
 		inst = append(inst, i)
 	}
-	var max int
+
+	in := make(chan int)
+	out := make(chan int)
+
+	go intcomp(inst, in, out)
+
+	in <- 8
+	fmt.Println(<-out)
+
+	/* var max int
 	totest := permutations([]int{0, 1, 2, 3, 4})
 	for _, p := range totest {
 		fmt.Println(p)
@@ -82,34 +99,23 @@ func main() {
 			max = t
 		}
 	}
-
 	fmt.Println(max)
-	// 4968420 <- ist falsch */
+	*/ // 4968420 <- ist falsch */
 
 }
 
-func thrust(p1, p2, p3, p4, p5 int, prog []int) int {
-	a1 := NewAmp(p1)
-	a2 := NewAmp(p2)
-	a3 := NewAmp(p3)
-	a4 := NewAmp(p4)
-	a5 := NewAmp(p5)
-	pro1 := make([]int, len(prog))
-	copy(pro1, prog)
-	pro2 := make([]int, len(prog))
-	copy(pro2, prog)
-	pro3 := make([]int, len(prog))
-	copy(pro3, prog)
-	pro4 := make([]int, len(prog))
-	copy(pro4, prog)
-	pro5 := make([]int, len(prog))
-	copy(pro5, prog)
+func thrust(p1, p2, p3, p4, p5, startsig int, prog []int) {
 
-	o1 := a1.RunAmp(0, pro1)
-	o2 := a2.RunAmp(o1[0], pro2)
-	o3 := a3.RunAmp(o2[0], pro3)
-	o4 := a4.RunAmp(o3[0], pro4)
-	o5 := a5.RunAmp(o4[0], pro5)
+	a1 := NewAmp(p1, prog)
+	a2 := NewAmp(p2, prog)
+	a3 := NewAmp(p3, prog)
+	a4 := NewAmp(p4, prog)
+	a5 := NewAmp(p5, prog)
 
-	return o5[0]
+	a1.RunAmp()
+	a2.RunAmp()
+	a3.RunAmp()
+	a4.RunAmp()
+	a5.RunAmp()
+
 }

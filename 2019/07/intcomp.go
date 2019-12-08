@@ -5,9 +5,9 @@ import (
 	"strconv"
 )
 
-func intcomp(memory []int, inputs []int, outputs []int) []int {
+func intcomp(memory []int, inputs chan int, outputs chan int) []int {
 	instpointer := 0
-	inputcount := 0
+	//inputcount := 0
 
 	// fmt.Println(instopstr, modp3, modp2, modp1, opcode)
 	for {
@@ -30,15 +30,15 @@ func intcomp(memory []int, inputs []int, outputs []int) []int {
 		//fmt.Println("Instruction:", instopstr, "Pointer:", instpointer, "Mod3:", modp3, "Mod2:", modp2, "Mod1:", modp1, "Opcode:", opcode)
 		if opcode == 99 {
 			//fmt.Println("HALT")
-			return outputs
+			// return outputs
+			// channel close?! ne, aber .... noch zu klären
 			break
 		}
 
 		// input
 		if opcode == 3 {
 			//fmt.Println("Input", inputs[inputcount])
-			memory[memory[instpointer+1]] = inputs[inputcount]
-			inputcount++
+			memory[memory[instpointer+1]] = <-inputs
 			instpointer = instpointer + 2
 			continue
 		}
@@ -51,7 +51,7 @@ func intcomp(memory []int, inputs []int, outputs []int) []int {
 				tooutput = memory[memory[instpointer+1]]
 			}
 			fmt.Println("OUT: ", tooutput)
-			outputs = append(outputs, tooutput)
+			outputs <- tooutput
 			//fmt.Println("outputs innen:", outputs)
 			//if tooutput != 0 {
 			//fmt.Println("Fehler")
