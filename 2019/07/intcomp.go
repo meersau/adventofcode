@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-func intcomp(memory []int, inputs chan int, outputs chan int) []int {
+func intcomp(memory []int, inputs chan int, outputs chan int) {
 	instpointer := 0
 	//inputcount := 0
 
@@ -27,11 +27,13 @@ func intcomp(memory []int, inputs chan int, outputs chan int) []int {
 				fmt.Sscanf(instopstr, "%2d", &opcode)
 			}
 		}
-		//fmt.Println("Instruction:", instopstr, "Pointer:", instpointer, "Mod3:", modp3, "Mod2:", modp2, "Mod1:", modp1, "Opcode:", opcode)
+		fmt.Println("Instruction:", instopstr, "Pointer:", instpointer, "Mod3:", modp3, "Mod2:", modp2, "Mod1:", modp1, "Opcode:", opcode)
 		if opcode == 99 {
 			//fmt.Println("HALT")
 			// return outputs
 			// channel close?! ne, aber .... noch zu klären
+			close(outputs)
+			close(inputs)
 			break
 		}
 
@@ -39,6 +41,7 @@ func intcomp(memory []int, inputs chan int, outputs chan int) []int {
 		if opcode == 3 {
 			//fmt.Println("Input", inputs[inputcount])
 			memory[memory[instpointer+1]] = <-inputs
+			fmt.Println("habe input")
 			instpointer = instpointer + 2
 			continue
 		}
@@ -128,6 +131,4 @@ func intcomp(memory []int, inputs chan int, outputs chan int) []int {
 			continue
 		}
 	}
-	return []int{}
-
 }

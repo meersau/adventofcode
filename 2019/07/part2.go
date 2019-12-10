@@ -1,4 +1,4 @@
-package main24
+package main
 
 import (
 	"bytes"
@@ -7,46 +7,31 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"sync"
 )
 
+var wg sync.WaitGroup
+
 type amp struct {
-	inputsignal  int
-	outputsignal int
-	phase        int
-	inchan       chan int
-	outchan      chan int
-	memory       []int
+	phase  int
+	prog   []int
+	input  chan int
+	output chan int
 }
 
-func NewAmp(phase int, mem []int) amp {
-	//in := make(chan int)
-	//out := make(chan int)
-	mymem := make([]int, len(mem))
-	copy(mymem, mem)
+func NewAmp(phase int, prog []int) amp {
+	ownprog := make([]int, len(prog))
+	copy(ownprog, prog)
 	return amp{
-		phase:  phase,
-		memory: mymem,
+		phase: phase,
+		prog:  ownprog,
 	}
 }
 
-func (a amp) RunAmp() {
-	intcomp(a.memory, a.inchan, a.outchan)
-}
-
-func (a amp) SendInput(in int) {
-	a.inchan <- in
-}
-
-func (a amp) GetOut() int {
-	return <-a.outchan
-}
-
-func (a amp) ConnectInput(in chan int) {
-	a.inchan = in
-}
-
-func (a amp) ConnectOutput(o chan int) {
-	a.outchan = o
+func (a amp) RunAmp(input chan int) chan int {
+	output := make(chan int)
+	go intcomp(a.prog, input, output)
+	return output
 }
 
 func permutations(arr []int) [][]int {
@@ -83,7 +68,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// b := []byte("3,9,8,9,10,9,4,9,99,-1,8")
+
 	i := bytes.Split(b, []byte{','})
 	inst := make([]int, 0)
 	for _, z := range i {
@@ -91,33 +76,27 @@ func main() {
 		inst = append(inst, i)
 	}
 
-	in := make(chan int)
-	out := make(chan int)
-
-	go intcomp(inst, in, out)
-
-	in <- 5
-	in <- 8
-	for o := range out {
-		fmt.Println(o)
-	}
-	close(in)
-	/* var max int
+	var max int
 	totest := permutations([]int{0, 1, 2, 3, 4})
 	for _, p := range totest {
-		fmt.Println(p)
+		wg.Add(5)
 		t := thrust(p[0], p[1], p[2], p[3], p[4], inst)
 		if t > max {
 			max = t
 		}
+		wg.Done()
+		wg.Done()
+		wg.Done()
+		wg.Done()
+		wg.Done()
 	}
+
 	fmt.Println(max)
-	*/ // 4968420 <- ist falsch */
+	// 4968420 <- ist falsch */
 
 }
 
-func thrust(p1, p2, p3, p4, p5, startsig int, prog []int) {
-
+func thrust(p1, p2, p3, p4, p5 int, prog []int) int {
 	a1 := NewAmp(p1, prog)
 	a2 := NewAmp(p2, prog)
 	a3 := NewAmp(p3, prog)
@@ -125,15 +104,11 @@ func thrust(p1, p2, p3, p4, p5, startsig int, prog []int) {
 	a5 := NewAmp(p5, prog)
 
 	input := make(chan int)
-	output := make(chan int)
-	a1.ConnectInput(input)
-	a1.ConnectOutput(output)
-	a1.RunAmp()
-
-	a2.ConnectInput(output)
-	a2.RunAmp()
-	a3.RunAmp()
-	a4.RunAmp()
-	a5.RunAmp()
-
+	out1 := a1.RunAmp(input)
+	o2 := a2.RunAmp(out1)
+	o3 := a3.RunAmp(o2)
+	o4 := a4.RunAmp(o3)
+	o5 := a5.RunAmp(o4)
+	input <- 0
+	return <-o5
 }
