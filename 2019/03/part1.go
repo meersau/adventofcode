@@ -2,9 +2,9 @@ package main
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strings"
 )
@@ -26,83 +26,124 @@ func main() {
 	s.Scan()
 	wire2 := strings.Split(s.Text(), ",")
 
-	wp1 := makeL(wire1)
-	wp2 := makeL(wire2)
-	lines1 := createLines(wp1)
-	lines2 := createLines(wp2)
-	// fmt.Println("Lines: ", lines1, lines2)
+	weg1 := mw(wire1)
+	weg2 := mw(wire2)
+	//fmt.Printf("%#v", weg1)
+	//pweg(weg1)
+	//pweg(weg2)
 
-	for _, l1 := range lines1 {
-		for _, l2 := range lines2 {
-			p, e := Intersection(l1, l2)
-			if e != nil {
-				continue
+	l := math.MaxInt64
+	d := 0
+	for k := range weg1 {
+		_, ok := weg2[k]
+		if ok {
+			d = getdist(p{0, 0}, k)
+			//fmt.Println(d)
+			//fmt.Println(d, l)
+			if d < l {
+				l = d
+				//fmt.Println("neu", l)
+
 			}
-			fmt.Println("Point of intersect", p)
 		}
 	}
+	fmt.Println(l)
 
 }
 
-type Line struct {
-	slope float64
-	yint  float64
+func getdist(a, b p) int {
+	return abs(a.x-b.x) + abs(a.y-b.y)
 }
-
-func CreateLine(a, b p) Line {
-	fmt.Println("create line")
-	ys := float64(b.y - a.y)
-	xs := float64(b.x - a.x)
-	var slope float64
-	if xs == 0 {
-		slope = 0
-	} else {
-		slope = ys / xs
+func abs(x int) int {
+	if x < 0 {
+		return -x
 	}
-	//fmt.Println(slope)
-	yint := float64(a.y) - slope*float64(a.x)
-	fmt.Println(yint)
-	return Line{slope, yint}
+	return x
 }
 
-func createLines(points []p) []Line {
-	lines := make([]Line, len(points)-1)
-	for i := range points {
-		if i == len(points)-1 {
-			break
+func mw(wire1 []string) map[p]bool {
+	weg1 := make(map[p]bool)
+
+	lastx := 0
+	lasty := 0
+	for i := 0; i < len(wire1); i++ {
+		d := wire1[i]
+		var dir string
+		var steps int
+		fmt.Sscanf(d, "%1s%d", &dir, &steps)
+		// fmt.Println("Dir", dir, "Steps:", steps)
+		switch dir {
+		case "R":
+			// fmt.Println("R")
+			for j := 0; j < steps; j++ {
+				lastx++
+				weg1[p{lastx, lasty}] = true
+			}
+		case "L":
+			// fmt.Println("L")
+
+			for j := 0; j < steps; j++ {
+				lastx--
+				weg1[p{lastx, lasty}] = true
+			}
+		case "D":
+			// fmt.Println("D")
+
+			for j := 0; j < steps; j++ {
+				lasty--
+				weg1[p{lastx, lasty}] = true
+			}
+		case "U":
+			// fmt.Println("U")
+
+			for j := 0; j < steps; j++ {
+				lasty++
+				weg1[p{lastx, lasty}] = true
+			}
 		}
-		fmt.Println(points[i], points[i+1])
-		lines = append(lines, CreateLine(points[i], points[i+1]))
 	}
-	return lines
+	return weg1
 }
 
-func Intersection(l1, l2 Line) (p, error) {
-	if l1.slope == l2.slope {
-		return p{}, errors.New("The lines do not intersect")
+func pweg(weg map[p]bool) {
+	mapp := make([][]string, 30)
+	for i := 0; i < 30; i++ {
+		mapp[i] = make([]string, 30)
 	}
-	x := (l2.yint - l1.yint) / (l1.slope - l2.slope)
-	y := l1.slope*x + l1.yint
-
-	return p{int(x), int(y)}, nil
+	for i := 0; i < 30; i++ {
+		for j := 0; j < 30; j++ {
+			mapp[i][j] = "."
+		}
+	}
+	for k := range weg {
+		mapp[k.x][k.y] = "-"
+	}
+	for i := 0; i < 30; i++ {
+		for j := 0; j < 30; j++ {
+			fmt.Printf("%v", mapp[i][j])
+		}
+		fmt.Println()
+	}
 }
 
-func makeL(wire []string) []p {
-	pp := make([]p, 1)
+/* func makeL(wire []string) map[p]bool {
+	weg := make(map[p]bool)
 
-	pp[0] = p{
+	weg[p{
 		x: 0,
 		y: 0,
-	}
+	}] = true
 
 	for i, d := range wire {
-		pp = append(pp, p{0, 0})
 		var dir string
 		var steps int
 		fmt.Sscanf(d, "%1s%d", &dir, &steps)
 		fmt.Println(dir, steps)
 		switch dir {
 		case "R":
+			for j := 0; j < steps; j++ {
+				k := p{}
+			}
 			pr := p{
 				x: pp[i].x + steps,
 				y: pp[i].y,
@@ -131,3 +172,4 @@ func makeL(wire []string) []p {
 	//fmt.Println(pp)
 	return pp
 }
+*/
