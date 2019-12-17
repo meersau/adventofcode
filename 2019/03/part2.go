@@ -1,4 +1,4 @@
-package main_
+package main
 
 import (
 	"bufio"
@@ -34,17 +34,18 @@ func main() {
 
 	l := math.MaxInt64
 	d := 0
-	for k := range weg1 {
-		_, ok := weg2[k]
+
+	for k, v := range weg1 {
+		a, ok := weg2[k]
+
 		if ok {
-			d = getdist(p{0, 0}, k)
-			//fmt.Println(d)
-			//fmt.Println(d, l)
+			d = a + v
 			if d < l {
 				l = d
 				//fmt.Println("neu", l)
 
 			}
+
 		}
 	}
 	fmt.Println(l)
@@ -61,11 +62,13 @@ func abs(x int) int {
 	return x
 }
 
-func mw(wire1 []string) map[p]bool {
-	weg1 := make(map[p]bool)
+func mw(wire1 []string) map[p]int {
+	weg1 := make(map[p]int)
 
 	lastx := 0
 	lasty := 0
+	var allsteps int
+
 	for i := 0; i < len(wire1); i++ {
 		d := wire1[i]
 		var dir string
@@ -77,28 +80,31 @@ func mw(wire1 []string) map[p]bool {
 			// fmt.Println("R")
 			for j := 0; j < steps; j++ {
 				lastx++
-				weg1[p{lastx, lasty}] = true
+				allsteps++
+				weg1[p{lastx, lasty}] = allsteps
 			}
 		case "L":
 			// fmt.Println("L")
 
 			for j := 0; j < steps; j++ {
 				lastx--
-				weg1[p{lastx, lasty}] = true
+				allsteps++
+				weg1[p{lastx, lasty}] = allsteps
 			}
 		case "D":
 			// fmt.Println("D")
 
 			for j := 0; j < steps; j++ {
 				lasty--
-				weg1[p{lastx, lasty}] = true
+				allsteps++
+				weg1[p{lastx, lasty}] = allsteps
 			}
 		case "U":
 			// fmt.Println("U")
-
 			for j := 0; j < steps; j++ {
 				lasty++
-				weg1[p{lastx, lasty}] = true
+				allsteps++
+				weg1[p{lastx, lasty}] = allsteps
 			}
 		}
 	}
@@ -125,51 +131,3 @@ func pweg(weg map[p]bool) {
 		fmt.Println()
 	}
 }
-
-/* func makeL(wire []string) map[p]bool {
-	weg := make(map[p]bool)
-
-	weg[p{
-		x: 0,
-		y: 0,
-	}] = true
-
-	for i, d := range wire {
-		var dir string
-		var steps int
-		fmt.Sscanf(d, "%1s%d", &dir, &steps)
-		fmt.Println(dir, steps)
-		switch dir {
-		case "R":
-			for j := 0; j < steps; j++ {
-				k := p{}
-			}
-			pr := p{
-				x: pp[i].x + steps,
-				y: pp[i].y,
-			}
-			pp[i+1] = pr
-		case "L":
-			pl := p{
-				x: pp[i].x - steps,
-				y: pp[i].y,
-			}
-			pp[i+1] = pl
-		case "D":
-			pd := p{
-				x: pp[i].x,
-				y: pp[i].y - steps,
-			}
-			pp[i+1] = pd
-		case "U":
-			pu := p{
-				x: pp[i].x,
-				y: pp[i].y + steps,
-			}
-			pp[i+1] = pu
-		}
-	}
-	//fmt.Println(pp)
-	return pp
-}
-*/
