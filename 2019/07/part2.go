@@ -17,21 +17,24 @@ type amp struct {
 	prog   []int
 	input  chan int
 	output chan int
+	n      string
 }
 
-func NewAmp(phase int, prog []int) amp {
+func NewAmp(phase int, prog []int, name string) amp {
 	ownprog := make([]int, len(prog))
 	copy(ownprog, prog)
 	return amp{
 		phase: phase,
 		prog:  ownprog,
-	}
+		n:     name}
 }
 
 func (a amp) RunAmp(input chan int) chan int {
-	output := make(chan int)
-	go intcomp(a.prog, input, output)
-	return output
+	a.output = make(chan int)
+	a.input = input
+	go intcomp(a.prog, a.input, a.output, a.n)
+	a.input <- a.phase
+	return a.output
 }
 
 func permutations(arr []int) [][]int {
@@ -76,32 +79,26 @@ func main() {
 		inst = append(inst, i)
 	}
 
-	var max int
-	totest := permutations([]int{0, 1, 2, 3, 4})
-	for _, p := range totest {
-		wg.Add(5)
-		t := thrust(p[0], p[1], p[2], p[3], p[4], inst)
-		if t > max {
-			max = t
-		}
-		wg.Done()
-		wg.Done()
-		wg.Done()
-		wg.Done()
-		wg.Done()
-	}
-
-	fmt.Println(max)
+	//var max int
+	//totest := permutations([]int{0, 1, 2, 3, 4})
+	//for _, p := range totest {
+	//t := thrust(p[0], p[1], p[2], p[3], p[4], inst)
+	t := thrust(5, 6, 7, 8, 9, inst)
+	//	if t > max {
+	//		max = t
+	//	}
+	//}
+	//fmt.Println(max)
 	// 4968420 <- ist falsch */
-
+	fmt.Println(t)
 }
 
 func thrust(p1, p2, p3, p4, p5 int, prog []int) int {
-	a1 := NewAmp(p1, prog)
-	a2 := NewAmp(p2, prog)
-	a3 := NewAmp(p3, prog)
-	a4 := NewAmp(p4, prog)
-	a5 := NewAmp(p5, prog)
+	a1 := NewAmp(p1, prog, "A1")
+	a2 := NewAmp(p2, prog, "A2")
+	a3 := NewAmp(p3, prog, "A3")
+	a4 := NewAmp(p4, prog, "A4")
+	a5 := NewAmp(p5, prog, "A5")
 
 	input := make(chan int)
 	out1 := a1.RunAmp(input)
@@ -110,5 +107,11 @@ func thrust(p1, p2, p3, p4, p5 int, prog []int) int {
 	o4 := a4.RunAmp(o3)
 	o5 := a5.RunAmp(o4)
 	input <- 0
-	return <-o5
+	rt := 0
+	for feed := range o5 {
+		rt = feed
+		input <- rt
+	}
+	close(input)
+	return rt
 }
