@@ -7,10 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"sync"
 )
-
-var wg sync.WaitGroup
 
 type amp struct {
 	phase  int
@@ -79,18 +76,17 @@ func main() {
 		inst = append(inst, i)
 	}
 
-	//var max int
-	//totest := permutations([]int{0, 1, 2, 3, 4})
-	//for _, p := range totest {
-	//t := thrust(p[0], p[1], p[2], p[3], p[4], inst)
-	t := thrust(5, 6, 7, 8, 9, inst)
-	//	if t > max {
-	//		max = t
-	//	}
-	//}
-	//fmt.Println(max)
+	var max int
+	totest := permutations([]int{5, 6, 7, 8, 9})
+	for _, p := range totest {
+		t := thrust(p[0], p[1], p[2], p[3], p[4], inst)
+		//t := thrust(5, 6, 7, 8, 9, inst)
+		if t > max {
+			max = t
+		}
+	}
+	fmt.Println(max)
 	// 4968420 <- ist falsch */
-	fmt.Println(t)
 }
 
 func thrust(p1, p2, p3, p4, p5 int, prog []int) int {
@@ -100,18 +96,30 @@ func thrust(p1, p2, p3, p4, p5 int, prog []int) int {
 	a4 := NewAmp(p4, prog, "A4")
 	a5 := NewAmp(p5, prog, "A5")
 
-	input := make(chan int)
+	input := make(chan int, 1)
 	out1 := a1.RunAmp(input)
 	o2 := a2.RunAmp(out1)
 	o3 := a3.RunAmp(o2)
 	o4 := a4.RunAmp(o3)
 	o5 := a5.RunAmp(o4)
 	input <- 0
-	rt := 0
-	for feed := range o5 {
+	var rt int
+	for {
+		j, more := <-o5
+		if more {
+			rt = j
+			input <- rt
+		} else {
+			close(input)
+			return rt
+		}
+	}
+
+	/* for feed := range o5 {
 		rt = feed
 		input <- rt
 	}
-	close(input)
-	return rt
+	fmt.Println("Range fertig")
+	close(input) */
+	//return rt
 }

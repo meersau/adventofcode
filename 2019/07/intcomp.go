@@ -32,7 +32,7 @@ func intcomp(memory []int, inputs chan int, outputs chan int, amp string) {
 			fmt.Println(amp, "HALT")
 			// return outputs
 			// channel close?! ne, aber .... noch zu klären
-			//close(outputs)
+			close(outputs)
 			//close(inputs)
 			break
 		}
@@ -41,7 +41,7 @@ func intcomp(memory []int, inputs chan int, outputs chan int, amp string) {
 		if opcode == 3 {
 			//fmt.Println("Input", inputs[inputcount])
 			memory[memory[instpointer+1]] = <-inputs
-			fmt.Println(amp, "habe input")
+			//fmt.Println(amp, "habe input")
 			instpointer = instpointer + 2
 			continue
 		}
