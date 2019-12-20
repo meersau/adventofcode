@@ -29,7 +29,7 @@ func main() {
 	in := make(chan int)
 	out := make(chan int)
 	go intcomp(inst, in, out, "A1")
-	in <- 1
+	in <- 2
 	oi := make([]int, 0)
 	for o := range out {
 		oi = append(oi, o)

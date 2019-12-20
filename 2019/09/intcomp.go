@@ -32,7 +32,7 @@ func intcomp(initmemory []int, inputs chan int, outputs chan int, amp string) {
 				fmt.Sscanf(instopstr, "%2d", &opcode)
 			}
 		}
-		fmt.Println("Amp:", amp, "Instruction:", instopstr, "Pointer:", instpointer, "Mod3:", modp3, "Mod2:", modp2, "Mod1:", modp1, "Opcode:", opcode)
+		// fmt.Println("Amp:", amp, "Instruction:", instopstr, "Pointer:", instpointer, "Mod3:", modp3, "Mod2:", modp2, "Mod1:", modp1, "Opcode:", opcode)
 		if opcode == 99 {
 			fmt.Println(amp, "HALT")
 			// return outputs
@@ -72,16 +72,16 @@ func intcomp(initmemory []int, inputs chan int, outputs chan int, amp string) {
 		// output one parameter
 		if opcode == 4 {
 			tooutput := para1
-			fmt.Println(amp, " OUT: ", tooutput)
+			// fmt.Println(amp, " OUT: ", tooutput)
 			outputs <- tooutput
 			instpointer = instpointer + 2
 			continue
 		}
 		// adjusts the relative base onyl one para
 		if opcode == 9 {
-			fmt.Println("Rel before", relativebase)
+			//fmt.Println("Rel before", relativebase)
 			relativebase = relativebase + para1
-			fmt.Println("Rel after", relativebase)
+			//fmt.Println("Rel after", relativebase)
 			instpointer = instpointer + 2
 			continue
 		}
