@@ -32,16 +32,94 @@ func main() {
 		m.vz = 0
 		moons = append(moons, m)
 	}
-
-	for i := 0; i < 1000; i++ {
-		stepupdatevelo(moons)
-
-		stepaddvelo(moons)
-	}
-	fmt.Println(moons)
-	fmt.Println(engery(moons))
+	sts := steptosame(moons)
+	fmt.Println(sts)
+	fmt.Println(lcm(lcm(sts[0], sts[1]), sts[2]))
+	// to low 919590 p2
 	// 111402 too high
 	// 40453963 too high
+}
+
+/*
+const gcd = (a, b) => a ? gcd(b % a, a) : b
+const lcm = (a, b) => a * b / gcd(a, b)
+
+*/
+
+func gcd(a, b int) int {
+	for b != 0 {
+		a, b = b, a%b
+	}
+	return a
+}
+
+func lcm(a, b int) int {
+	return a * b / gcd(a, b)
+}
+
+func checkx(m, init []moon) bool {
+	for i := 0; i < len(m); i++ {
+		if m[i].x != init[i].x || m[i].vx != init[i].vx {
+			return false
+		}
+	}
+	return true
+}
+func checky(m, init []moon) bool {
+	for i := 0; i < len(m); i++ {
+		if m[i].y != init[i].y || m[i].vy != init[i].vy {
+			return false
+		}
+	}
+	return true
+}
+
+func checkz(m, init []moon) bool {
+	for i := 0; i < len(m); i++ {
+		if m[i].z != init[i].z || m[i].vz != init[i].vz {
+			return false
+		}
+	}
+	return true
+}
+
+func steptosame(moons []moon) []int {
+	init := make([]moon, len(moons))
+	copy(init, moons)
+	steps := make([]int, 3)
+
+	var stopx, stopy, stopz bool
+	// var stepx, stepy, stepz int
+	step := 0
+	for !(stopx && stopy && stopz) {
+		stepupdatevelo(moons)
+		stepaddvelo(moons)
+		step++
+
+		if !stopx && checkx(moons, init) {
+			steps[0] = step //+ 1
+			stopx = true
+		}
+		if !stopy && checky(moons, init) {
+			steps[1] = step //+ 1
+			stopy = true
+			fmt.Println("Only one")
+		}
+		if !stopz && checkz(moons, init) {
+			steps[2] = step //+ 1
+			stopz = true
+		}
+	}
+
+	return steps
+}
+
+func part1(moons []moon) int {
+	for i := 0; i < 1000; i++ {
+		stepupdatevelo(moons)
+		stepaddvelo(moons)
+	}
+	return engery(moons)
 }
 
 func abs(x int) int {
